@@ -21,10 +21,8 @@ class QaReplyTest extends TestCase
         $reply = QaReply::factory()
             ->for($user)
             ->create();
-
         // Act
         $author = $reply->user;
-
         // Assert
         $this->assertTrue($author->is($user));
     }
@@ -33,14 +31,11 @@ class QaReplyTest extends TestCase
     {
         // Arrange
         $thread = QaThread::factory()->create();
-
-        $reply = QaReply::factory()
-            ->for($thread)
-            ->create();
-
+        $reply = QaReply::factory()->create([
+            'qa_thread_id' => $thread->id,
+        ]);
         // Act
         $parent = $reply->thread;
-
         // Assert
         $this->assertTrue($parent->is($thread));
     }

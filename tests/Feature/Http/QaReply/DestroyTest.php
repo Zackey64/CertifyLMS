@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Http\QaReply;
 
+use App\Models\QaReply;
 use App\Models\QaThread;
 use App\Models\User;
-use App\Models\QaReply;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class DestroyTest extends TestCase
         $response = $this->actingAs($user)->delete(route('qa-board.replies.destroy', [$thread, $reply]));
         // Assert
         $response->assertRedirect(route('qa-board.show', $thread));
-        $this->assertDatabaseMissing('qa_replies', ['id' => $reply->id,]);
+        $this->assertDatabaseMissing('qa_replies', ['id' => $reply->id]);
     }
 
     // 作成者以外は回答を削除できない
@@ -57,6 +57,6 @@ class DestroyTest extends TestCase
         $response = $this->actingAs($admin)->delete(route('admin.qa-board.replies.destroy', [$thread, $reply]));
         // Assert
         $response->assertRedirect(route('admin.qa-board.show', $thread));
-        $this->assertDatabaseMissing('qa_replies', ['id' => $reply->id,]);
+        $this->assertDatabaseMissing('qa_replies', ['id' => $reply->id]);
     }
 }

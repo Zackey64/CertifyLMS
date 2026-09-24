@@ -43,8 +43,12 @@ class QaThreadTest extends TestCase
     {
         // Arrange
         $thread = QaThread::factory()->create();
-        QaReply::factory()->for($thread)->create();
-        QaReply::factory()->for($thread)->create();
+        QaReply::factory()->create([
+            'qa_thread_id' => $thread->id,
+        ]);
+        QaReply::factory()->create([
+            'qa_thread_id' => $thread->id,
+        ]);
         QaReply::factory()->create();
         // Act
         $replies = $thread->replies;

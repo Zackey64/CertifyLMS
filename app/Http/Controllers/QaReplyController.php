@@ -50,9 +50,8 @@ class QaReplyController extends Controller
         $reply->delete();
 
         $redirectRoute = request()->routeIs('admin.*') ? 'admin.qa-board.show' : 'qa-board.show';
+
         return redirect()->route($redirectRoute, $thread)
             ->with('success', '回答を削除しました。');
     }
 }
-
-

@@ -104,6 +104,7 @@ class QaThreadController extends Controller
         $thread->delete();
 
         $redirectRoute = request()->routeIs('admin.*') ? 'admin.qa-board.index' : 'qa-board.index';
+
         return redirect()->route($redirectRoute)
             ->with('success', '質問スレッドを削除しました。');
     }
