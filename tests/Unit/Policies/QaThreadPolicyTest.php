@@ -139,7 +139,7 @@ class QaThreadPolicyTest extends TestCase
         $owner = User::factory()->student()->create();
         $otherUser = User::factory()->student()->create();
         $thread = QaThread::factory()->for($owner)->create();
-        $policy = new QaThreadPolicy;  
+        $policy = new QaThreadPolicy;
         // Assert
         $this->assertFalse($policy->resolve($otherUser, $thread));
     }

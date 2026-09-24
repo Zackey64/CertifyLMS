@@ -26,7 +26,7 @@ class DestroyTest extends TestCase
         $response = $this->actingAs($user)->delete(route('qa-board.destroy', $thread));
         // Assert
         $response->assertRedirect(route('qa-board.index'));
-        $this->assertDatabaseMissing('qa_threads', ['id' => $thread->id,]);
+        $this->assertDatabaseMissing('qa_threads', ['id' => $thread->id]);
     }
 
     // 作成者以外はスレッドを削除できない
@@ -72,6 +72,6 @@ class DestroyTest extends TestCase
         $response = $this->actingAs($admin)->delete(route('admin.qa-board.destroy', $thread));
         // Assert
         $response->assertRedirect(route('admin.qa-board.index'));
-        $this->assertDatabaseMissing('qa_threads', ['id' => $thread->id,]);
+        $this->assertDatabaseMissing('qa_threads', ['id' => $thread->id]);
     }
 }

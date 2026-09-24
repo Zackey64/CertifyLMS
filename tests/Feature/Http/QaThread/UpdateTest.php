@@ -29,6 +29,7 @@ class UpdateTest extends TestCase
         $response = $this->actingAs($user)->patch(route('qa-board.update', $thread), $data);
         // Assert
         $response->assertRedirect(route('qa-board.show', $thread));
+        $this->assertDatabaseHas('qa_threads', ['id' => $thread->id]);
     }
 
     // 作成者以外はスレッドを更新できない
