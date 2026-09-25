@@ -26,6 +26,7 @@ use App\Http\Controllers\MockExamQuestionController;
 use App\Http\Controllers\MockExamSessionController;
 use App\Http\Controllers\MockExamSessionMonitorController;
 use App\Http\Controllers\PartController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\QaReplyController;
 use App\Http\Controllers\QaThreadController;
 use App\Http\Controllers\QuestionCategoryController;
@@ -225,7 +226,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::delete('qa-board/{thread}/replies/{reply}', [QaReplyController::class, 'destroy'])
         ->name('admin.qa-board.replies.destroy');
 
-    //
+    // 面談パック管理
     Route::get('meeting-packs', [MeetingPackController::class, 'index'])->name('admin.meeting-packs.index');
     Route::get('meeting-packs/create', [MeetingPackController::class, 'create'])->name('admin.meeting-packs.create');
     Route::post('meeting-packs', [MeetingPackController::class, 'store'])->name('admin.meeting-packs.store');
@@ -236,6 +237,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::post('meeting-packs/{plan}/publish', [MeetingPackController::class, 'publish'])->name('admin.meeting-packs.publish');
     Route::post('meeting-packs/{plan}/archive', [MeetingPackController::class, 'archive'])->name('admin.meeting-packs.archive');
     Route::post('meeting-packs/{plan}/unarchive', [MeetingPackController::class, 'unarchive'])->name('admin.meeting-packs.unarchive');
+
+    // プラン管理
+    Route::get('plans', [PlanController::class, 'index'])->name('admin.plans.index');
+    Route::get('plans/create', [PlanController::class, 'create'])->name('admin.plans.create');
+    Route::post('plans', [PlanController::class, 'store'])->name('admin.plans.store');
+    Route::get('plans/{plan}', [PlanController::class, 'show'])->name('admin.plans.show');
+    Route::get('plans/{plan}/edit', [PlanController::class, 'edit'])->name('admin.plans.edit');
+    Route::put('plans/{plan}', [PlanController::class, 'update'])->name('admin.plans.update');
+    Route::delete('plans/{plan}', [PlanController::class, 'destroy'])->name('admin.plans.destroy');
+    Route::post('plans/{plan}/publish', [PlanController::class, 'publish'])->name('admin.plans.publish');
+    Route::post('plans/{plan}/archive', [PlanController::class, 'archive'])->name('admin.plans.archive');
+    Route::post('plans/{plan}/unarchive', [PlanController::class, 'unarchive'])->name('admin.plans.unarchive');
+
 });
 
 // ============================================================
