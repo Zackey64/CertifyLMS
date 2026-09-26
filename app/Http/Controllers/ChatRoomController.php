@@ -9,7 +9,9 @@ use App\Exceptions\Chat\CertificationCoachNotAssignedForChatException;
 use App\Http\Requests\Chat\IndexAsCoachRequest;
 use App\Http\Requests\Chat\IndexRequest;
 use App\Http\Requests\Chat\StoreMessageRequest;
+use App\Models\ChatMember;
 use App\Models\ChatRoom;
+use App\Notifications\ChatMessageReceivedNotification;
 use App\Services\ChatUnreadCountService;
 use App\UseCases\Chat\ShowAction;
 use App\UseCases\Chat\StoreMessageAction;
@@ -146,6 +148,16 @@ class ChatRoomController extends Controller
         }
 
         $action($user, $room, $request->validated());
+
+        // 通知
+        $room->members->each(function (ChatMember $member) use ($user): void {
+            if ($member->user_id === $user->id) {
+                return;
+            }
+            $member->user->notify(
+                new ChatMessageReceivedNotification
+            );
+        });
 
         return redirect()
             ->route('chat.show', $room)

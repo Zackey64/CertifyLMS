@@ -20,6 +20,8 @@ use App\Models\Enrollment;
 use App\Models\Meeting;
 use App\Models\MeetingMemo;
 use App\Models\User;
+use App\Notifications\MeetingCanceledNotification;
+use App\Notifications\MeetingReservedNotification;
 use App\Services\CoachMeetingLoadService;
 use App\Services\MeetingAvailabilityService;
 use App\Services\MeetingQuotaService;
@@ -216,6 +218,9 @@ class MeetingController extends Controller
             return $meeting->fresh();
         });
 
+        // コーチに通知
+        $meeting->coach->notify(new MeetingReservedNotification);
+
         return redirect()
             ->route('meetings.show', $meeting)
             ->with('success', '面談を予約しました。');
@@ -249,6 +254,12 @@ class MeetingController extends Controller
                 'canceled_at' => now(),
             ]);
         });
+
+        // 通知
+        $recipient = $actor->id === $meeting->student_id
+            ? $meeting->coach
+            : $meeting->student;
+        $recipient->notify(new MeetingCanceledNotification);
 
         return redirect()
             ->route('meetings.show', $meeting)
