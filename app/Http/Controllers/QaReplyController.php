@@ -8,6 +8,7 @@ use App\Http\Requests\QaReply\StoreRequest;
 use App\Http\Requests\QaReply\UpdateRequest;
 use App\Models\QaReply;
 use App\Models\QaThread;
+use App\Notifications\QaReplyReceivedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -21,6 +22,11 @@ class QaReplyController extends Controller
             'user_id' => auth()->id(),
             'body' => $request->validated('body'),
         ]);
+
+        // 通知
+        if (auth()->id() !== $thread->user_id) {
+            $thread->user->notify(new QaReplyReceivedNotification);
+        }
 
         return redirect()->route('qa-board.show', ['thread' => $thread])
             ->with('success', '回答を投稿しました。');
