@@ -33,6 +33,7 @@ final class IndexAction
             ->orderByRaw('CASE WHEN exam_date IS NULL THEN 1 ELSE 0 END')
             ->orderBy('current_term')
             ->orderBy('exam_date')
+            ->withCount('goals')
             ->get();
     }
 }
