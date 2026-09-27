@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Http\EnrollmentGoal;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\Enrollment;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class StoreTest extends TestCase
@@ -32,6 +33,7 @@ class StoreTest extends TestCase
         ]);
         $response->assertRedirect(route('enrollments.show', $enrollment));
     }
+
     // 他の受講生は目標を登録できない
     public function test_other_student_cannot_store_goal(): void
     {

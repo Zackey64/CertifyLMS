@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit\Http\Requests\EnrollmentGoal;
 
 use App\Http\Requests\EnrollmentGoal\UpdateRequest;
@@ -21,7 +23,7 @@ class UpdateTest extends TestCase
             'target_date' => now()->addDays(7),
         ];
         // Act
-        $validator = Validator::make($data, (new UpdateRequest())->rules());
+        $validator = Validator::make($data, (new UpdateRequest)->rules());
         // Assert
         $this->assertTrue($validator->passes());
     }
