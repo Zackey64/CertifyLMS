@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
+use App\Models\ChatRoom;
+use App\Models\QaThread;
 use App\Models\User;
 use App\Notifications\ChatMessageReceivedNotification;
 use App\Notifications\MeetingCanceledNotification;
@@ -22,7 +24,8 @@ class NotificationSeeder extends Seeder
     {
         $student = User::where('role', UserRole::Student->value)->orderBy('created_at')->first();
         $coach = User::where('role', UserRole::Coach->value)->orderBy('created_at')->first();
-
+        $room = ChatRoom::first();
+        $thread = QaThread::first();
         foreach ([$student, $coach] as $user) {
             if ($user === null) {
                 continue;
@@ -30,37 +33,29 @@ class NotificationSeeder extends Seeder
 
             for ($i = 0; $i < 5; $i++) {
                 //
-                $notification = new ChatMessageReceivedNotification;
-                $user->notifications()->create([
-                    'id' => (string) Str::uuid(),
-                    'type' => $notification::class,
-                    'data' => $notification->toDatabase($user),
-                    'read_at' => fake()->boolean() ? now() : null,
-                ]);
+                $user->notify(new ChatMessageReceivedNotification($room));
+                $notification = $user->notifications()->latest()->first();
+                if (fake()->boolean()) {
+                    $notification->markAsRead();
+                }
                 //
-                $notification = new QaReplyReceivedNotification;
-                $user->notifications()->create([
-                    'id' => (string) Str::uuid(),
-                    'type' => $notification::class,
-                    'data' => $notification->toDatabase($user),
-                    'read_at' => fake()->boolean() ? now() : null,
-                ]);
+                $user->notify(new QaReplyReceivedNotification($thread));
+                $notification = $user->notifications()->latest()->first();
+                if (fake()->boolean()) {
+                    $notification->markAsRead();
+                }
                 //
-                $notification = new MeetingReservedNotification;
-                $user->notifications()->create([
-                    'id' => (string) Str::uuid(),
-                    'type' => $notification::class,
-                    'data' => $notification->toDatabase($user),
-                    'read_at' => fake()->boolean() ? now() : null,
-                ]);
+                $user->notify(new MeetingReservedNotification);
+                $notification = $user->notifications()->latest()->first();
+                if (fake()->boolean()) {
+                    $notification->markAsRead();
+                }
                 //
-                $notification = new MeetingCanceledNotification;
-                $user->notifications()->create([
-                    'id' => (string) Str::uuid(),
-                    'type' => $notification::class,
-                    'data' => $notification->toDatabase($user),
-                    'read_at' => fake()->boolean() ? now() : null,
-                ]);
+                $user->notify(new MeetingCanceledNotification);
+                $notification = $user->notifications()->latest()->first();
+                if (fake()->boolean()) {
+                    $notification->markAsRead();
+                }
             }
         }
 
