@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Notifications;
 
-use App\Models\User;
 use App\Models\QaThread;
+use App\Models\User;
 use App\Notifications\QaReplyReceivedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Messages\MailMessage;

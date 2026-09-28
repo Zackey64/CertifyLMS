@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Notifications;
 
-use App\Models\User;
 use App\Models\ChatRoom;
+use App\Models\User;
 use App\Notifications\ChatMessageReceivedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Messages\MailMessage;

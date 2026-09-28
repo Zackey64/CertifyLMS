@@ -13,7 +13,6 @@ use App\Notifications\MeetingCanceledNotification;
 use App\Notifications\MeetingReservedNotification;
 use App\Notifications\QaReplyReceivedNotification;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class NotificationSeeder extends Seeder
 {
