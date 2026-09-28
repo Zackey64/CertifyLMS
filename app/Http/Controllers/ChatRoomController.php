@@ -155,7 +155,7 @@ class ChatRoomController extends Controller
                 return;
             }
             $member->user->notify(
-                new ChatMessageReceivedNotification
+                new ChatMessageReceivedNotification($room)
             );
         });
 

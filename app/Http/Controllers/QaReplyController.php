@@ -25,7 +25,9 @@ class QaReplyController extends Controller
 
         // 通知
         if (auth()->id() !== $thread->user_id) {
-            $thread->user->notify(new QaReplyReceivedNotification);
+            $thread->user->notify(
+                new QaReplyReceivedNotification($thread)
+            );
         }
 
         return redirect()->route('qa-board.show', ['thread' => $thread])

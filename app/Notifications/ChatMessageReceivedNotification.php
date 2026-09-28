@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Models\ChatRoom;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,6 +12,8 @@ use Illuminate\Notifications\Notification;
 class ChatMessageReceivedNotification extends Notification
 {
     use Queueable;
+
+    public function __construct(private readonly ChatRoom $room) {}
 
     public function via(object $notifiable): array
     {
@@ -21,17 +24,20 @@ class ChatMessageReceivedNotification extends Notification
     {
         return [
             'notification_type' => 'chat_message_received',
-            'title' => '新しいメッセージがあります',
-            'body' => 'チャットに新しいメッセージが届いています。',
-            'url' => route('chat.index'),
+            'title' => "chatの「{$this->room->enrollment->certification->name}」にメッセージが届いています。",
+            'body' => "chatの「{$this->room->enrollment->certification->name}」にメッセージが届いています。",
+            'url' => route('chat.show', $this->room),
         ];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('新しいメッセージがあります')
-            ->line('チャットに新しいメッセージが届いています。')
-            ->action('チャットを確認する', route('chat.index'));
+            ->subject("chatの「{$this->room->enrollment->certification->name}」にメッセージが届いています。")
+            ->line("chatの「{$this->room->enrollment->certification->name}」にメッセージが届いています。")
+            ->action(
+                'チャットを確認する',
+                route('chat.show', $this->room),
+            );
     }
 }

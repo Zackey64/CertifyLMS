@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Http\Notification;
 
 use App\Models\User;
+use App\Models\ChatRoom;
 use App\Notifications\ChatMessageReceivedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -19,7 +20,8 @@ class MarkAllAsReadTest extends TestCase
     {
         // Arrange
         $student = User::factory()->student()->create();
-        $notification = new ChatMessageReceivedNotification;
+        $room = ChatRoom::factory()->create();
+        $notification = new ChatMessageReceivedNotification($room);
         $databaseNotification = $student->notifications()->create([
             'id' => (string) Str::uuid(),
             'type' => $notification::class,
@@ -38,7 +40,8 @@ class MarkAllAsReadTest extends TestCase
     {
         // Arrange
         $coach = User::factory()->coach()->create();
-        $notification = new ChatMessageReceivedNotification;
+        $room = ChatRoom::factory()->create();
+        $notification = new ChatMessageReceivedNotification($room);
         $databaseNotification = $coach->notifications()->create([
             'id' => (string) Str::uuid(),
             'type' => $notification::class,
@@ -57,7 +60,8 @@ class MarkAllAsReadTest extends TestCase
     {
         // Arrange
         $admin = User::factory()->admin()->create();
-        $notification = new ChatMessageReceivedNotification;
+        $room = ChatRoom::factory()->create();
+        $notification = new ChatMessageReceivedNotification($room);
         $databaseNotification = $admin->notifications()->create([
             'id' => (string) Str::uuid(),
             'type' => $notification::class,
