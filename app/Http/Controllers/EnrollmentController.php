@@ -107,6 +107,11 @@ class EnrollmentController extends Controller
         $user = auth()->user();
         $progress = null;
 
+        // 目標を achieved_at が設定されているものを後ろにして取得
+        $enrollment->loadMissing([
+            'goals' => fn ($q) => $q->orderByRaw('achieved_at IS NOT NULL')->latest(),
+        ]);
+
         // staff(admin / coach)時のみ進捗集計を行う
         if (in_array($user->role, [UserRole::Coach, UserRole::Admin], true)) {
             $enrollment->loadMissing(['user']);
