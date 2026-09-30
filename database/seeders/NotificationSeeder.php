@@ -30,7 +30,7 @@ class NotificationSeeder extends Seeder
                 continue;
             }
 
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 0; $i < 8; $i++) {
                 //
                 $user->notify(new ChatMessageReceivedNotification($room));
                 $notification = $user->notifications()->latest()->first();
