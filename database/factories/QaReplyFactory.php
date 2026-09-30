@@ -24,7 +24,11 @@ class QaReplyFactory extends Factory
         return [
             'user_id' => User::factory(),
             'qa_thread_id' => QaThread::factory(),
-            'body' => fake()->realTextBetween(50, 100),
+            'body' => fake()->randomElement([
+                'FormRequestを作成してrulesメソッドに定義すると管理しやすいです。',
+                'git switch -c ブランチ名で新しいブランチを作成できます。',
+                'Featureテストでは実際のHTTPリクエストを使って動作を確認できます。',
+            ]),
         ];
     }
 }

@@ -25,8 +25,16 @@ class QaThreadFactory extends Factory
         return [
             'user_id' => User::factory(),
             'certification_id' => Certification::factory(),
-            'title' => fake()->realTextBetween(10, 50),
-            'body' => fake()->realTextBetween(50, 100),
+            'title' => fake()->randomElement([
+                'Laravelのバリデーションについて教えてください',
+                'Gitでブランチを作成する方法を教えてください',
+                'テストの書き方について質問です',
+            ]),
+            'body' => fake()->randomElement([
+                'FormRequestを使う場合の基本的な書き方を教えてください。',
+                '新しいブランチを作成して作業する方法を知りたいです。',
+                'LaravelでFeatureテストを書く際のポイントを教えてください。',
+            ]),
             'status' => QaThreadStatus::Unresolved,
             'resolved_at' => null,
         ];
