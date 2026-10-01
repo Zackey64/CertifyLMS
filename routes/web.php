@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\EnrollmentGoalController;
 use App\Http\Controllers\EnrollmentManagementController;
+use App\Http\Controllers\EnrollmentNoteController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LearningHourTargetController;
 use App\Http\Controllers\MeetingController;
@@ -96,6 +97,16 @@ Route::middleware('auth')->group(function () {
     // パスワード変更
     Route::put('settings/password', [PasswordController::class, 'update'])
         ->name('settings.password.update');
+
+    // 受講生メモ管理
+    Route::post('enrollments/{enrollment}/notes', [EnrollmentNoteController::class, 'store'])
+        ->name('enrollments.notes.store');
+    Route::get('enrollment-notes/{note}/edit', [EnrollmentNoteController::class, 'edit'])
+        ->name('enrollment-notes.edit');
+    Route::patch('enrollment-notes/{note}', [EnrollmentNoteController::class, 'update'])
+        ->name('enrollment-notes.update');
+    Route::delete('enrollment-notes/{note}', [EnrollmentNoteController::class, 'destroy'])
+        ->name('enrollment-notes.destroy');
 });
 
 // ============================================================
@@ -390,6 +401,7 @@ Route::middleware(['auth', 'role:admin,coach'])->prefix('admin')->group(function
         ->name('admin.section-questions.publish');
     Route::post('section-questions/{sectionQuestion}/unpublish', [SectionQuestionController::class, 'unpublish'])
         ->name('admin.section-questions.unpublish');
+
 });
 
 // ============================================================

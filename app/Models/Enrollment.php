@@ -153,6 +153,16 @@ class Enrollment extends Model
         return $this->hasMany(EnrollmentGoal::class, 'enrollment_id', 'id');
     }
 
+    /**
+     * 受講登録に紐づく受講生メモの一覧。
+     *
+     * @return HasMany<EnrollmentNote, $this>
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(EnrollmentNote::class, 'enrollment_id', 'id');
+    }
+
     public function scopeLearning(Builder $query): Builder
     {
         return $query->where('status', EnrollmentStatus::Learning->value);
