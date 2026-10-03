@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Http\EnrollmentNote;
 
+use App\Models\Certification;
 use App\Models\Enrollment;
 use App\Models\EnrollmentNote;
 use App\Models\User;
-use App\Models\Certification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

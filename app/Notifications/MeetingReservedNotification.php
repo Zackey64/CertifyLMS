@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class MeetingReservedNotification extends Notification
@@ -14,7 +13,7 @@ class MeetingReservedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -25,13 +24,5 @@ class MeetingReservedNotification extends Notification
             'body' => '新しいミーティングが予約されました。',
             'url' => route('meetings.index'),
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('ミーティングが予約されました')
-            ->line('新しいミーティングが予約されました。')
-            ->action('ミーティングを確認する', route('meetings.index'));
     }
 }
