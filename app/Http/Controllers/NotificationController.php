@@ -45,7 +45,8 @@ class NotificationController extends Controller
             return redirect($url);
         }
 
-        return redirect()->route('notifications.index');
+        return redirect()->route('notifications.index')
+            ->with('success', '既読にしました。');
     }
 
     public function markAllAsRead(Request $request): RedirectResponse
@@ -54,6 +55,13 @@ class NotificationController extends Controller
             ->unreadNotifications
             ->markAsRead();
 
-        return back();
+        return back()->with('success', 'すべて既読にしました。');
+    }
+
+    public function show(DatabaseNotification $notification): View
+    {
+        $notification = request()->user()->notifications()->findOrFail($notification->id);
+
+        return view('notifications.show', compact('notification'));
     }
 }

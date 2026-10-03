@@ -7,33 +7,31 @@ namespace Tests\Unit\Notifications;
 use App\Models\User;
 use App\Notifications\MeetingCanceledNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Notifications\Messages\MailMessage;
 use Tests\TestCase;
 
 class MeetingCanceledNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_to_mail_has_certify_lms_subject(): void
+    public function test_via_returns_database_channel(): void
     {
         // Arrange
         $user = User::factory()->create();
         $notification = new MeetingCanceledNotification;
         // Act
-        $mail = $notification->toMail($user);
+        $channels = $notification->via($user);
         // Assert
-        $this->assertInstanceOf(MailMessage::class, $mail);
-        $this->assertSame('ミーティングがキャンセルされました', $mail->subject);
+        $this->assertSame(['database'], $channels);
     }
 
-    public function test_to_mail_action_url_includes_token(): void
+    public function test_to_database_contains_url(): void
     {
         // Arrange
         $user = User::factory()->create();
         $notification = new MeetingCanceledNotification;
         // Act
-        $mail = $notification->toMail($user);
+        $database = $notification->toDatabase($user);
         // Assert
-        $this->assertStringContainsString('/meetings', $mail->actionUrl);
+        $this->assertStringContainsString('/meetings', $database['url']);
     }
 }

@@ -6,7 +6,6 @@ namespace App\Notifications;
 
 use App\Models\QaThread;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class QaReplyReceivedNotification extends Notification
@@ -17,7 +16,7 @@ class QaReplyReceivedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -28,16 +27,5 @@ class QaReplyReceivedNotification extends Notification
             'body' => "質問掲示板の「{$this->qaThread->title}」に回答が届いています。",
             'url' => route('qa-board.show', $this->qaThread),
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject("質問掲示板の「{$this->qaThread->title}」に回答が届いています。")
-            ->line("質問掲示板の「{$this->qaThread->title}」に回答が届いています。")
-            ->action(
-                '回答を確認する',
-                route('qa-board.show', $this->qaThread),
-            );
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CertificationCatalogController;
@@ -288,6 +289,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::post('plans/{plan}/archive', [PlanController::class, 'archive'])->name('admin.plans.archive');
     Route::post('plans/{plan}/unarchive', [PlanController::class, 'unarchive'])->name('admin.plans.unarchive');
 
+    // お知らせ管理
+    Route::get('announcements', [AnnouncementController::class, 'index'])->name('admin.announcements.index');
+    Route::get('announcements/create', [AnnouncementController::class, 'create'])->name('admin.announcements.create');
+    Route::post('announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
+    Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('admin.announcements.show');
 });
 
 // ============================================================
@@ -435,6 +441,9 @@ Route::middleware(['auth', 'role:student', 'active-learning'])->group(function (
         ->name('mock-exam-sessions.destroy');
     Route::patch('mock-exam-sessions/{session}/answers', [MockExamAnswerController::class, 'update'])
         ->name('mock-exam-sessions.answers.update');
+
+    //
+    Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
 });
 
 // ============================================================
