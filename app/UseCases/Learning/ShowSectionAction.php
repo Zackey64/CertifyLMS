@@ -36,7 +36,9 @@ final class ShowSectionAction
 
         if ($section->status !== ContentStatus::Published
             || $chapter === null || $chapter->status !== ContentStatus::Published
-            || $part === null || $part->status !== ContentStatus::Published) {
+            || $part === null || $part->status !== ContentStatus::Published
+            || $part->certification === null || $part->certification->status !== ContentStatus::Published
+        ) {
             throw new NotFoundHttpException;
         }
 

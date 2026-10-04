@@ -27,7 +27,9 @@ final class ShowChapterAction
 
         if ($chapter->status !== ContentStatus::Published
             || $chapter->part === null
-            || $chapter->part->status !== ContentStatus::Published) {
+            || $chapter->part->status !== ContentStatus::Published
+            || $chapter->part->certification->status !== ContentStatus::Published
+        ) {
             throw new NotFoundHttpException;
         }
 

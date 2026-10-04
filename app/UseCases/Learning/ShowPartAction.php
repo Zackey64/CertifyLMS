@@ -26,7 +26,9 @@ final class ShowPartAction
     {
         $part->loadMissing('certification');
 
-        if ($part->status !== ContentStatus::Published) {
+        if ($part->status !== ContentStatus::Published
+            || $part->certification->status !== ContentStatus::Published
+        ) {
             throw new NotFoundHttpException;
         }
 
