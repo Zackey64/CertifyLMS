@@ -33,7 +33,7 @@ class SectionImagePolicy
             default => false,
         };
     }
-    
+
     private function assignedCoach(User $coach, Certification $certification): bool
     {
         return $certification->coaches()->where('users.id', $coach->id)->exists();
