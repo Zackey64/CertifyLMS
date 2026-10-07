@@ -69,6 +69,8 @@ final class OnboardAction
                 'password' => Hash::make($validated['password']),
                 'profile_setup_completed' => true,
                 'email_verified_at' => $now,
+                // 状態を`in_progress`に更新
+                'status' => UserStatus::InProgress,
             ];
 
             // 受講生のみ Plan 期間を確定。コーチは受講期間という業務概念を持たない。
