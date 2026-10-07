@@ -150,7 +150,7 @@ class ChatRoomController extends Controller
         $action($user, $room, $request->validated());
 
         // 通知
-        $room->members->each(function (ChatMember $member) use ($user): void {
+        $room->members->each(function (ChatMember $member) use ($user, $room): void {
             if ($member->user_id === $user->id) {
                 return;
             }
