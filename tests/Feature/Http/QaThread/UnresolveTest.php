@@ -27,7 +27,7 @@ class UnresolveTest extends TestCase
         $response = $this->actingAs($user)->post(route('qa-board.unresolve', $thread));
         // Assert
         $response->assertRedirect(route('qa-board.show', $thread));
-        $this->assertSame(QaThreadStatus::Unresolved, $thread->fresh()->status);
+        $this->assertSame(QaThreadStatus::Open, $thread->fresh()->status);
     }
 
     // 作成者以外はスレッドを未解決にできない
@@ -38,12 +38,12 @@ class UnresolveTest extends TestCase
         $otherUser = User::factory()->student()->create();
         $thread = QaThread::factory()->create([
             'user_id' => $otherUser->id,
-            'status' => QaThreadStatus::Unresolved,
+            'status' => QaThreadStatus::Open,
         ]);
         // Act
         $response = $this->actingAs($user)->post(route('qa-board.unresolve', $thread));
         // Assert
         $response->assertForbidden();
-        $this->assertSame(QaThreadStatus::Unresolved, $thread->fresh()->status);
+        $this->assertSame(QaThreadStatus::Open, $thread->fresh()->status);
     }
 }

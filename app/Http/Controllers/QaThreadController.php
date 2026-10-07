@@ -59,7 +59,7 @@ class QaThreadController extends Controller
         $this->authorize('create', QaThread::class);
         $validatedData = $request->validated();
         $validatedData['user_id'] = auth()->id();
-        $validatedData['status'] = QaThreadStatus::Unresolved->value;
+        $validatedData['status'] = QaThreadStatus::Open->value;
 
         $thread = QaThread::create($validatedData);
 
@@ -127,7 +127,7 @@ class QaThreadController extends Controller
         $this->authorize('unresolve', $thread);
 
         $thread->update([
-            'status' => QaThreadStatus::Unresolved,
+            'status' => QaThreadStatus::Open,
             'resolved_at' => null,
         ]);
 

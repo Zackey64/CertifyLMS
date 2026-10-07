@@ -30,7 +30,7 @@ class QaThreadSeeder extends Seeder
                 QaThread::factory()->create([
                     'user_id' => $student->id,
                     'certification_id' => $certification->id,
-                    'status' => QaThreadStatus::Unresolved,
+                    'status' => QaThreadStatus::Open,
                     'resolved_at' => null,
                     'created_at' => now()->subDays(rand(5, 10)),
                 ]);

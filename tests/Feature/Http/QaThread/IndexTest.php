@@ -69,7 +69,7 @@ class IndexTest extends TestCase
         ]);
         QaThread::factory()->create([
             'title' => 'OtherThread',
-            'status' => QaThreadStatus::Unresolved->value,
+            'status' => QaThreadStatus::Open->value,
         ]);
         // Act
         $response = $this->actingAs($user)->get(route('qa-board.index', ['status' => $thread->status]));
@@ -115,7 +115,7 @@ class IndexTest extends TestCase
         ]);
         QaThread::factory()->create([
             'title' => 'OtherThread',
-            'status' => QaThreadStatus::Unresolved->value,
+            'status' => QaThreadStatus::Open->value,
         ]);
         // Act
         $response = $this->actingAs($user)->get(route('qa-board.index', ['keyword' => 'Match']));

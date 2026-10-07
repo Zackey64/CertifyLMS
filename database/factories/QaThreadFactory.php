@@ -35,7 +35,7 @@ class QaThreadFactory extends Factory
                 '新しいブランチを作成して作業する方法を知りたいです。',
                 'LaravelでFeatureテストを書く際のポイントを教えてください。',
             ]),
-            'status' => QaThreadStatus::Unresolved,
+            'status' => QaThreadStatus::Open,
             'resolved_at' => null,
         ];
     }

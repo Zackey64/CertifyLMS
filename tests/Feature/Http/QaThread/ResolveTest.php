@@ -21,7 +21,7 @@ class ResolveTest extends TestCase
         $user = User::factory()->student()->create();
         $thread = QaThread::factory()->create([
             'user_id' => $user->id,
-            'status' => QaThreadStatus::Unresolved,
+            'status' => QaThreadStatus::Open,
         ]);
         // Act
         $response = $this->actingAs($user)->post(route('qa-board.resolve', $thread));
@@ -38,12 +38,12 @@ class ResolveTest extends TestCase
         $otherUser = User::factory()->student()->create();
         $thread = QaThread::factory()->create([
             'user_id' => $otherUser->id,
-            'status' => QaThreadStatus::Unresolved,
+            'status' => QaThreadStatus::Open,
         ]);
         // Act
         $response = $this->actingAs($user)->post(route('qa-board.resolve', $thread));
         // Assert
         $response->assertForbidden();
-        $this->assertSame(QaThreadStatus::Unresolved, $thread->fresh()->status);
+        $this->assertSame(QaThreadStatus::Open, $thread->fresh()->status);
     }
 }

@@ -14,14 +14,14 @@ class QaThreadStatusTest extends TestCase
         $values = array_map(fn (QaThreadStatus $s) => $s->value, QaThreadStatus::cases());
 
         $this->assertEqualsCanonicalizing(
-            ['unresolved', 'resolved'],
+            ['open', 'resolved'],
             $values,
         );
     }
 
     public function test_japanese_labels(): void
     {
-        $this->assertSame('未解決', QaThreadStatus::Unresolved->label());
+        $this->assertSame('未解決', QaThreadStatus::Open->label());
         $this->assertSame('解決済', QaThreadStatus::Resolved->label());
     }
 }
