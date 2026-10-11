@@ -64,18 +64,18 @@ class SendMeetingReminders extends Command
 
     private function targetMeetings(MeetingReminderType $type)
     {
-        return match ($type) {
-            MeetingReminderType::Eve => Meeting::query()
-                ->where('status', MeetingStatus::Reserved)
-                ->where('scheduled_at', '<=', now()->addDay())
-                ->where('scheduled_at', '>', now())
-                ->get(),
+        $now = now()->startOfMinute();
 
-            MeetingReminderType::OneHourBefore => Meeting::query()
-                ->where('status', MeetingStatus::Reserved)
-                ->where('scheduled_at', '<=', now()->addHour())
-                ->where('scheduled_at', '>', now())
-                ->get(),
+        $targetTime = match ($type) {
+            MeetingReminderType::Eve => $now->copy()->addDay(),
+            MeetingReminderType::OneHourBefore => $now->copy()->addHour(),
         };
+
+        return Meeting::query()
+            ->where('status', MeetingStatus::Reserved)
+            ->where('scheduled_at', '>=', $targetTime)
+            ->where('scheduled_at', '<', $targetTime->copy()->addMinute())
+            ->with(['student', 'coach'])
+            ->get();
     }
 }
