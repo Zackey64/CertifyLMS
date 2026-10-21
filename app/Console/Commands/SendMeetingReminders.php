@@ -66,16 +66,22 @@ class SendMeetingReminders extends Command
     {
         $now = now()->startOfMinute();
 
-        $targetTime = match ($type) {
-            MeetingReminderType::Eve => $now->copy()->addDay(),
-            MeetingReminderType::OneHourBefore => $now->copy()->addHour(),
-        };
-
-        return Meeting::query()
+        $query = Meeting::query()
             ->where('status', MeetingStatus::Reserved)
-            ->where('scheduled_at', '>=', $targetTime)
-            ->where('scheduled_at', '<', $targetTime->copy()->addMinute())
-            ->with(['student', 'coach'])
-            ->get();
+            ->with(['student', 'coach']);
+
+        if ($type === MeetingReminderType::Eve) {
+            $query
+                ->where('scheduled_at', '<=', $now->copy()->addDay())
+                ->where('scheduled_at', '>', $now);
+        } else {
+            $targetTime = $now->copy()->addHour();
+
+            $query
+                ->where('scheduled_at', '>=', $targetTime)
+                ->where('scheduled_at', '<', $targetTime->copy()->addMinute());
+        }
+
+        return $query->get();
     }
 }
