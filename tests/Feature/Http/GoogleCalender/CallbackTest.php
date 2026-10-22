@@ -58,5 +58,4 @@ class CallbackTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('error');
     }
-
 }

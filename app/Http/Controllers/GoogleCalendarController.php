@@ -29,7 +29,6 @@ class GoogleCalendarController extends Controller
         $client->setPrompt('consent');
 
         $state = bin2hex(random_bytes(32));
-
         $request->session()->put('google_calendar_oauth_state', $state);
 
         $client->setState($state);
@@ -89,11 +88,8 @@ class GoogleCalendarController extends Controller
                 'google_user_id' => $googleUser->id,
                 'calendar_id' => 'primary',
                 'access_token' => json_encode($token, JSON_THROW_ON_ERROR),
-                'refresh_token' => $token['refresh_token']
-                    ?? $request->user()->googleCredential?->refresh_token,
-                'token_expires_at' => now()->addSeconds(
-                    (int) ($token['expires_in'] ?? 3600)
-                ),
+                'refresh_token' => $token['refresh_token'] ?? $request->user()->googleCredential?->refresh_token,
+                'token_expires_at' => now()->addSeconds((int) ($token['expires_in'] ?? 3600)),
                 'connected_at' => now(),
             ],
         );
