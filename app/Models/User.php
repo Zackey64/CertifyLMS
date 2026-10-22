@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -155,6 +156,17 @@ class User extends Authenticatable
             ->withPivot(['id', 'assigned_by_user_id', 'assigned_at', 'unassigned_at'])
             ->withTimestamps()
             ->wherePivot('unassigned_at', null);
+    }
+
+    /**
+     * Google アカウントの認証情報
+     * 連携済みでなければ null となる
+     *
+     * @return HasOne<GoogleCredential, $this>
+     */
+    public function googleCredential(): HasOne
+    {
+        return $this->hasOne(GoogleCredential::class);
     }
 
     /**

@@ -38,6 +38,8 @@ class DatabaseSeeder extends Seeder
             ProfileSeeder::class,
             EnrollmentNoteSeeder::class,
             AnnouncementSeeder::class,
+
+            GoogleCredentialSeeder::class,
         ]);
     }
 }
