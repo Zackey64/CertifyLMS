@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AiChatConversationController;
+use App\Http\Controllers\AiChatMessageController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\BrowseController;
@@ -142,6 +144,14 @@ Route::middleware(['auth', 'role:student', 'active-learning'])->group(function (
     Route::delete('enrollment-goals/{goal}', [EnrollmentGoalController::class, 'destroy'])->name('enrollment-goals.destroy');
     Route::post('enrollment-goals/{goal}/achieve', [EnrollmentGoalController::class, 'markAchieved'])->name('enrollment-goals.markAchieved');
     Route::delete('enrollment-goals/{goal}/achieve', [EnrollmentGoalController::class, 'unmarkAchieved'])->name('enrollment-goals.unmarkAchieved');
+    // AI チャット関連ルート
+    Route::get('ai-chat', [AiChatConversationController::class, 'index'])->name('ai-chat.index');
+    Route::post('ai-chat/conversations', [AiChatConversationController::class, 'store'])->name('ai-chat.conversations.store');
+    Route::get('ai-chat/conversations/{conversation}', [AiChatConversationController::class, 'show'])->name('ai-chat.conversations.show');
+    Route::patch('ai-chat/conversations/{conversation}', [AiChatConversationController::class, 'update'])->name('ai-chat.conversations.update');
+    Route::delete('ai-chat/conversations/{conversation}', [AiChatConversationController::class, 'destroy'])->name('ai-chat.conversations.destroy');
+    Route::post('ai-chat/conversations/{conversation}/messages', [AiChatMessageController::class, 'store'])->name('ai-chat.conversations.messages.store');
+
 });
 
 // ============================================================
