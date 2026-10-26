@@ -14,7 +14,7 @@ class PaymentStatusTest extends TestCase
         $values = array_map(fn (PaymentStatus $s) => $s->value, PaymentStatus::cases());
 
         $this->assertEqualsCanonicalizing(
-            ['pending', 'succeeded', 'failed', 'refunded'],
+            [ 'succeeded', 'failed','pending', 'refunded'],
             $values,
         );
     }
