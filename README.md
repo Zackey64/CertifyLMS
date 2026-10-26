@@ -143,3 +143,18 @@ sail bin pint --test     # 整形漏れの確認（CI 相当のチェック）
 - `PUSHER_*` — チャットのリアルタイム配信に使用します。有効にする場合は Pusher のキーを取得して設定し、`BROADCAST_DRIVER=pusher` に変更してください。未設定（既定の `BROADCAST_DRIVER=log`）でもメッセージの送受信自体は動作し、相手画面へのリアルタイム反映のみ行われません
 
 新しい環境変数やセットアップ手順を追加した場合は、`.env.example` と本 README に追記し、チームの誰でも環境を再現できる状態を保ってください。
+
+## 新規実装機能確認手順
+
+### Stripe 連携（追加面談購入）
+
+1. Stripe公式サイトにログインし、テスト環境のシークレットキーを確認する。
+2. 表示された sk_test_... を .env の STRIPE_SECRET に設定する。
+3. Stripe CLI をダウンロード・インストールし、ターミナルで以下のコマンドを実行する。
+```
+stripe listen --events checkout.session.completed --forward-to http://localhost:8000/webhooks/stripe
+```
+4. 表示された whsec_... を .env の STRIPE_WEBHOOK_SECRET に設定する。
+5. アプリケーションから追加面談回数の購入手続きを行い、以下のテストカード情報で決済する。
+（4242 4242 4242 4242, 12/34, 123）
+6. Stripe CLI のターミナルで Webhook の応答が 200 になることを確認する。また、決済状態が完了になり、購入分の面談回数が残数に反映されることを確認する。
