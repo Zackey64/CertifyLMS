@@ -10,6 +10,7 @@ use App\Exceptions\Certification\EnrollmentNotPassedException;
 use App\Models\Certificate;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -23,6 +24,10 @@ use Illuminate\Support\Str;
  */
 final class IssueAction
 {
+    public function __construct(
+        private readonly GeneratePdfAction $generatePdf,
+    ) {}
+
     /**
      * @throws EnrollmentNotPassedException 受講登録が修了状態ではない
      * @throws CertificateAlreadyIssuedException 同一 Enrollment で修了証が既発行
@@ -33,24 +38,38 @@ final class IssueAction
             throw new EnrollmentNotPassedException;
         }
 
-        return DB::transaction(function () use ($enrollment) {
-            // 二重発行ガード: lockForUpdate で同時呼出を直列化し、enrollment_id UNIQUE 違反を例外メッセージ判別ではなく事前 SELECT で確定検出する
-            $existing = Certificate::query()
-                ->where('enrollment_id', $enrollment->id)
-                ->lockForUpdate()
-                ->first();
+        $path = null;
 
-            if ($existing !== null) {
-                throw new CertificateAlreadyIssuedException;
+        try {
+            return DB::transaction(function () use ($enrollment, &$path) {
+                $existing = Certificate::query()
+                    ->where('enrollment_id', $enrollment->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existing !== null) {
+                    throw new CertificateAlreadyIssuedException;
+                }
+
+                $path = 'certificates/'.Str::ulid().'.pdf';
+
+                $certificate = Certificate::create([
+                    'user_id' => $enrollment->user_id,
+                    'enrollment_id' => $enrollment->id,
+                    'certification_id' => $enrollment->certification_id,
+                    'pdf_path' => $path,
+                    'issued_at' => now(),
+                ]);
+
+                ($this->generatePdf)($certificate, $path);
+
+                return $certificate->refresh();
+            });
+        } catch (\Throwable $e) {
+            if ($path !== null) {
+                Storage::disk('private')->delete($path);
             }
-
-            return Certificate::create([
-                'user_id' => $enrollment->user_id,
-                'enrollment_id' => $enrollment->id,
-                'certification_id' => $enrollment->certification_id,
-                'pdf_path' => 'certificates/'.Str::ulid().'.pdf',
-                'issued_at' => now(),
-            ]);
-        });
+            throw $e;
+        }
     }
 }
