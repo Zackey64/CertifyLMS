@@ -7,6 +7,7 @@ use App\Http\Controllers\AiChatMessageController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\BrowseController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CertificationCatalogController;
 use App\Http\Controllers\CertificationCategoryController;
 use App\Http\Controllers\CertificationCoachAssignmentController;
@@ -116,6 +117,10 @@ Route::middleware('auth')->group(function () {
         ->name('enrollment-notes.update');
     Route::delete('enrollment-notes/{note}', [EnrollmentNoteController::class, 'destroy'])
         ->name('enrollment-notes.destroy');
+
+    // 修了証 PDF ダウンロード
+    Route::get('certificates/{certificate}/download', [CertificateController::class, 'download'])
+        ->name('certificates.download');
 });
 
 // ============================================================

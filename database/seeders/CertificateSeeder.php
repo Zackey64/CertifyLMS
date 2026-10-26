@@ -14,7 +14,9 @@ use App\Models\Certification;
 use App\Models\Enrollment;
 use App\Models\EnrollmentStatusLog;
 use App\Models\User;
+use App\UseCases\Certificate\GeneratePdfAction;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -37,6 +39,8 @@ final class CertificateSeeder extends Seeder
 {
     public function run(): void
     {
+        $generatePdf = app(GeneratePdfAction::class);
+
         $graduatedStudents = User::query()
             ->where('role', UserRole::Student->value)
             ->where('status', UserStatus::Graduated->value)
@@ -67,7 +71,7 @@ final class CertificateSeeder extends Seeder
             }
 
             $enrollment = $this->createPastEnrollment($student, $certification, $i);
-            $this->issueCertificateForEnrollment($enrollment);
+            $this->issueCertificateForEnrollment($enrollment, $generatePdf);
         }
     }
 
@@ -117,16 +121,26 @@ final class CertificateSeeder extends Seeder
     /**
      * Certificate を 1 件発行する。
      */
-    private function issueCertificateForEnrollment(Enrollment $enrollment): void
+    private function issueCertificateForEnrollment(Enrollment $enrollment, GeneratePdfAction $generatePdf): void
     {
-        $issuedAt = $enrollment->passed_at ?? now();
+        $certificate = Certificate::query()
+            ->where('enrollment_id', $enrollment->id)
+            ->first();
 
-        $certificate = Certificate::factory()
-            ->forEnrollment($enrollment)
-            ->state([
-                'pdf_path' => 'certificates/'.Str::ulid().'.pdf',
-                'issued_at' => $issuedAt,
-            ])
-            ->create();
+        if ($certificate === null) {
+            $certificate = Certificate::factory()
+                ->forEnrollment($enrollment)
+                ->state([
+                    'pdf_path' => 'certificates/'.Str::ulid().'.pdf',
+                    'issued_at' => $enrollment->passed_at ?? now(),
+                ])
+                ->create();
+        }
+
+        $disk = Storage::disk('private');
+
+        if (! $disk->exists($certificate->pdf_path)) {
+            $generatePdf($certificate, $certificate->pdf_path);
+        }
     }
 }
