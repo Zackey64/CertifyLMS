@@ -65,7 +65,7 @@ class HandleTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'id' => $payment->id,
-            'status' => PaymentStatus::Completed->value,
+            'status' => PaymentStatus::Succeeded->value,
         ]);
 
         $this->assertDatabaseHas('meeting_quota_transactions', [

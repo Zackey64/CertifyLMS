@@ -38,7 +38,7 @@ class PaymentSeeder extends Seeder
             'meeting_pack_id' => $meetingPack->id,
             'quantity' => $meetingPack->meeting_count,
             'amount' => $meetingPack->price,
-            'status' => PaymentStatus::Completed,
+            'status' => PaymentStatus::Succeeded,
             'stripe_payment_intent_id' => 'pi_test_123',
             'paid_at' => now(),
         ]);

@@ -64,12 +64,12 @@ class StripeWebhookController extends Controller
             }
 
             // 二重付与を防止
-            if ($payment->status === PaymentStatus::Completed) {
+            if ($payment->status === PaymentStatus::Succeeded) {
                 return;
             }
 
             $payment->update([
-                'status' => PaymentStatus::Completed,
+                'status' => PaymentStatus::Succeeded,
                 'stripe_payment_intent_id' => $session->payment_intent,
                 'paid_at' => now(),
             ]);
