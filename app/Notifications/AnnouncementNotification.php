@@ -6,16 +6,18 @@ namespace App\Notifications;
 
 use App\Models\Announcement;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
-class AnnouncementNotification extends Notification
+class AnnouncementNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(private readonly Announcement $announcement)
     {
         $this->id = (string) Str::uuid();
+        $this->afterCommit();
     }
 
     public function via(object $notifiable): array

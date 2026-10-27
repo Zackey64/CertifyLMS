@@ -6,13 +6,17 @@ namespace App\Notifications;
 
 use App\Models\QaThread;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class QaReplyReceivedNotification extends Notification
+class QaReplyReceivedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly QaThread $qaThread) {}
+    public function __construct(private readonly QaThread $qaThread)
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
