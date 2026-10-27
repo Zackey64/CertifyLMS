@@ -7,8 +7,11 @@ namespace Tests\Unit\Services;
 use App\Exceptions\Mentoring\MeetingOutOfAvailabilityException;
 use App\Models\Certification;
 use App\Models\CoachAvailability;
+use App\Models\Enrollment;
+use App\Models\GoogleCredential;
 use App\Models\Meeting;
 use App\Models\User;
+use App\Services\GoogleCalendarService;
 use App\Services\MeetingAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,5 +124,79 @@ class MeetingAvailabilityServiceTest extends TestCase
         // 例外が起きないことを確認
         app(MeetingAvailabilityService::class)->validateSlot($certification, Carbon::parse('2026-06-01 09:00:00'));
         $this->addToAssertionCount(1);
+    }
+
+    /**
+     * Google カレンダーの予定と重複するスロットを除外することを確認するテスト。
+     *
+     * @group external-api
+     */
+    public function test_excludes_slots_overlapping_google_calendar_events(): void
+    {
+        // Arrange
+        $enrollment = Enrollment::factory()->create();
+        $certification = $enrollment->certification;
+        $student = $enrollment->user;
+
+        $date = Carbon::parse('2026-11-01');
+
+        $coachWithEvent = User::factory()->create();
+        $coachWithoutEvent = User::factory()->create();
+
+        $certification->coaches()->syncWithoutDetaching([
+            $coachWithEvent->id => [
+                'assigned_by_user_id' => $student->id,
+                'assigned_at' => now(),
+            ],
+            $coachWithoutEvent->id => [
+                'assigned_by_user_id' => $student->id,
+                'assigned_at' => now(),
+            ],
+        ]);
+
+        foreach ([$coachWithEvent, $coachWithoutEvent] as $coach) {
+            CoachAvailability::factory()->create([
+                'coach_id' => $coach->id,
+                'day_of_week' => $date->dayOfWeek,
+                'start_time' => '09:00:00',
+                'end_time' => '12:00:00',
+                'is_active' => true,
+            ]);
+        }
+
+        $credential = GoogleCredential::factory()->create([
+            'user_id' => $coachWithEvent->id,
+        ]);
+
+        $this->mock(GoogleCalendarService::class)
+            ->shouldReceive('getBusyIntervals')
+            ->once()
+            ->withArgs(fn ($actualCredential, $start, $end) => $actualCredential->is($credential)
+                && $start->equalTo($date->copy()->startOfDay())
+                && $end->equalTo($date->copy()->endOfDay())
+            )
+            ->andReturn([
+                [
+                    'start' => Carbon::parse('2026-11-01 10:30:00'),
+                    'end' => Carbon::parse('2026-11-01 11:30:00'),
+                ],
+            ]);
+
+        // Act
+        $slots = app(MeetingAvailabilityService::class)
+            ->slotsForCertification($certification, $date);
+
+        // Assert
+        $this->assertSame(
+            ['09:00', '10:00', '11:00'],
+            $slots->map(
+                fn (array $slot) => $slot['slot_start']->format('H:i')
+            )->all(),
+        );
+
+        $this->assertSame(
+            [2, 1, 1],
+            $slots->pluck('available_coach_count')->all(),
+        );
     }
 }

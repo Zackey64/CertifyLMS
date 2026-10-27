@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\MeetingQuotaTransactionType;
-use App\Enums\PaymentStatus;
-use App\Models\MeetingQuotaTransaction;
-use App\Models\Payment;
+use App\Services\StripeWebhookService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
@@ -18,21 +14,20 @@ use Stripe\Webhook;
 
 class StripeWebhookController extends Controller
 {
-    public function handle(Request $request): Response
-    {
-        Log::info('Stripe webhook called');
+    public function handle(
+        Request $request,
+        StripeWebhookService $stripeWebhookService,
+    ): Response {
 
-        $payload = $request->getContent();
-        $signature = $request->header('Stripe-Signature');
-        $secret = config('services.stripe.webhook_secret');
+        Log::info('Stripe webhook called');
 
         try {
             $event = Webhook::constructEvent(
-                $payload,
-                $signature ?? '',
-                $secret,
+                $request->getContent(),
+                $request->header('Stripe-Signature', ''),
+                config('services.stripe.webhook_secret'),
             );
-        } catch (UnexpectedValueException|SignatureVerificationException $e) {
+        } catch (UnexpectedValueException|SignatureVerificationException) {
             return response('Invalid webhook', 400);
         }
 
@@ -42,46 +37,15 @@ class StripeWebhookController extends Controller
 
         $session = $event->data->object;
 
-        // 決済が完了していることを確認
-        if ($session->payment_status !== 'paid') {
+        if (($session->payment_status ?? null) !== 'paid') {
             return response('Payment not completed', 200);
         }
 
-        $paymentId = $session->metadata->payment_id ?? null;
-
-        if (! $paymentId) {
+        if (! ($session->metadata->payment_id ?? null)) {
             return response('Payment ID missing', 400);
         }
 
-        DB::transaction(function () use ($session, $paymentId) {
-            $payment = Payment::whereKey($paymentId)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            // 別のCheckoutセッションによる処理を防止
-            if ($payment->stripe_checkout_session_id !== $session->id) {
-                return;
-            }
-
-            // 二重付与を防止
-            if ($payment->status === PaymentStatus::Succeeded) {
-                return;
-            }
-
-            $payment->update([
-                'status' => PaymentStatus::Succeeded,
-                'stripe_payment_intent_id' => $session->payment_intent,
-                'paid_at' => now(),
-            ]);
-
-            MeetingQuotaTransaction::create([
-                'user_id' => $payment->user_id,
-                'type' => MeetingQuotaTransactionType::Purchased,
-                'amount' => $payment->quantity,
-                'related_payment_id' => $payment->id,
-                'occurred_at' => now(),
-            ]);
-        });
+        $stripeWebhookService->handleCheckoutSessionCompleted($session);
 
         return response('OK', 200);
     }

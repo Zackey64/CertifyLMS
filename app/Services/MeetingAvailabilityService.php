@@ -8,6 +8,7 @@ use App\Enums\MeetingStatus;
 use App\Exceptions\Mentoring\MeetingOutOfAvailabilityException;
 use App\Models\Certification;
 use App\Models\CoachAvailability;
+use App\Models\GoogleCredential;
 use App\Models\Meeting;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -19,8 +20,12 @@ use Illuminate\Support\Collection;
  * 既存予約済時刻 を除外して各スロットの「予約可能なコーチ数」を返す。受講生にコーチ個別は提示せず、
  * 予約確定時にコーチを自動割当する。
  */
-final class MeetingAvailabilityService
+class MeetingAvailabilityService
 {
+    public function __construct(
+        private readonly GoogleCalendarService $googleCalendarService,
+    ) {}
+
     /**
      * 指定 Certification の担当コーチ集合について、指定日 1 日分の 60 分単位空きスロットを返す。
      *
@@ -34,7 +39,7 @@ final class MeetingAvailabilityService
         $dayEnd = $date->copy()->endOfDay();
         $dayOfWeek = $date->dayOfWeek;
 
-        $coaches = $certification->coaches()->get();
+        $coaches = $certification->coaches()->with('googleCredential')->get();
         if ($coaches->isEmpty()) {
             return collect();
         }
@@ -58,6 +63,20 @@ final class MeetingAvailabilityService
             ->groupBy('coach_id')
             ->map(fn ($rows) => $rows->map(fn (Meeting $m) => $m->scheduled_at->format('H:i'))->all());
 
+        $busyByCoach = [];
+
+        foreach ($coaches as $coach) {
+            $credential = $coach->googleCredential;
+
+            if (! $credential instanceof GoogleCredential) {
+                $busyByCoach[$coach->id] = [];
+
+                continue;
+            }
+
+            $busyByCoach[$coach->id] = $this->googleCalendarService
+                ->getBusyIntervals($credential, $dayStart, $dayEnd);
+        }
         /** @var array<string, int> $slotCounts スロット開始時刻(H:i) → available coach 数 */
         $slotCounts = [];
 
@@ -70,7 +89,17 @@ final class MeetingAvailabilityService
                 $coachId = $availability->coach_id;
                 $booked = $bookedByCoach[$coachId] ?? [];
 
-                if (! in_array($slotKey, $booked, true)) {
+                $slotStart = $slot->copy();
+                $slotEnd = $slotStart->copy()->addHour();
+
+                $busyIntervals = $busyByCoach[$coachId] ?? [];
+
+                $hasGoogleEvent = collect($busyIntervals)->contains(
+                    fn (array $busy) => $slotStart->lt($busy['end'])
+                        && $slotEnd->gt($busy['start'])
+                );
+
+                if (! in_array($slotKey, $booked, true) && ! $hasGoogleEvent) {
                     $slotCounts[$slotKey] = ($slotCounts[$slotKey] ?? 0) + 1;
                 }
 
