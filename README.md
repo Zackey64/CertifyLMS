@@ -146,7 +146,28 @@ sail bin pint --test     # 整形漏れの確認（CI 相当のチェック）
 
 ## 新規実装機能確認手順
 
-### Stripe 連携（追加面談購入）
+### Google Calendar 連携
+
+1. Google Cloud Console に Googleアカウントでログイン。
+2. プロジェクトを作成するか、既存のプロジェクトを選択し、Google Calendar APIを有効化する。
+3. Google Auth PlatformでOAuth同意画面を設定し、OAuthクライアントIDを作成する。
+4. 表示されたクライアントIDを .env の GOOGLE_CLIENT_ID に設定する。
+5. 表示されたクライアントシークレットを .env の GOOGLE_CLIENT_SECRET に設定する。
+6. .env の GOOGLE_REDIRECT_URI に設定されているURLを、Google CloudのOAuthクライアント設定にある「承認済みのリダイレクトURI」に登録する。
+7. アプリケーションにコーチでログインし、Google Calendar連携の設定画面を開く。
+8. Googleアカウントとの連携を開始し、アクセス権限を許可する。
+9. アプリケーションに受講生でログインし、面談予約を行う。
+10. 面談予約が正常に完了し、コーチ（自身）のGoogle Calendarに予定が登録されることを確認する。
+
+### Gemini AI 連携
+
+1. Google AI Studio に Googleアカウントでログイン。
+2. APIキーの管理画面を開き、APIキーを作成する。
+3. 作成されたAPIキーを .env の GEMINI_API_KEY に設定する。
+4. アプリケーションからAIチャット画面を開き、メッセージを入力して送信する。
+5. AIから回答が返ってくることを確認する。
+
+### Stripe 連携
 
 1. Stripe公式サイトにログインし、テスト環境のシークレットキーを確認する。
 2. 表示された sk_test_... を .env の STRIPE_SECRET に設定する。
