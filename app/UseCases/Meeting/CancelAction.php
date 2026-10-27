@@ -10,6 +10,7 @@ use App\Exceptions\Mentoring\MeetingStatusTransitionException;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingCanceledNotification;
+use App\Services\GoogleCalendarService;
 use App\UseCases\MeetingQuota\RefundQuotaAction;
 use Illuminate\Support\Facades\DB;
 
@@ -17,11 +18,12 @@ class CancelAction
 {
     public function __construct(
         private readonly RefundQuotaAction $refundAction,
+        private readonly GoogleCalendarService $googleCalendarService,
     ) {}
 
     public function __invoke(Meeting $meeting, User $actor): void
     {
-        DB::transaction(function () use ($meeting, $actor) {
+        $eventId = DB::transaction(function () use ($meeting, $actor): ?string {
             $locked = Meeting::query()
                 ->whereKey($meeting->id)
                 ->lockForUpdate()
@@ -42,7 +44,19 @@ class CancelAction
             ]);
 
             ($this->refundAction)($locked->student, $locked->id);
+
+            return $locked->google_calendar_event_id;
         });
+
+        // Google カレンダーに登録済みのイベントを削除する。
+        $credential = $meeting->coach->googleCredential;
+
+        if ($eventId !== null && $credential !== null) {
+            $this->googleCalendarService->deleteMeetingEvent(
+                $credential,
+                $eventId,
+            );
+        }
 
         // 通知先はキャンセルした人以外
         $recipient = $actor->id === $meeting->student_id

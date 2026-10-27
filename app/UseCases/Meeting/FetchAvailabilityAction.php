@@ -9,7 +9,7 @@ use App\Services\MeetingAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-final class FetchAvailabilityAction
+class FetchAvailabilityAction
 {
     public function __construct(
         private readonly MeetingAvailabilityService $availabilityService,

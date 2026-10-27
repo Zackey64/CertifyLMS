@@ -4,36 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Google\Client;
-use Google\Client as GoogleClient;
-use Google\Service\Calendar;
-use Google\Service\Oauth2;
+use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class GoogleCalendarController extends Controller
 {
+    public function __construct(
+        private readonly GoogleCalendarService $googleCalendarService,
+    ) {}
+
     public function redirect(Request $request): RedirectResponse
     {
-        $client = new GoogleClient;
-        $client->setClientId(config('services.google.client_id'));
-        $client->setClientSecret(config('services.google.client_secret'));
-        $client->setRedirectUri(config('services.google.redirect'));
-        $client->setScopes([
-            'https://www.googleapis.com/auth/calendar',
-            'openid',
-            'email',
-        ]);
-
-        $client->setAccessType('offline');
-        $client->setPrompt('consent');
-
         $state = bin2hex(random_bytes(32));
         $request->session()->put('google_calendar_oauth_state', $state);
+        $authUrl = $this->googleCalendarService->createAuthUrl($state);
 
-        $client->setState($state);
-
-        return redirect()->away($client->createAuthUrl());
+        return redirect()->away($authUrl);
     }
 
     public function callback(Request $request): RedirectResponse
@@ -58,34 +45,26 @@ class GoogleCalendarController extends Controller
                 ->with('error', 'Google から認証コードを取得できませんでした。');
         }
 
-        $client = new Client;
-        $client->setClientId(config('services.google.client_id'));
-        $client->setClientSecret(config('services.google.client_secret'));
-        $client->setRedirectUri(config('services.google.redirect'));
-
-        $token = $client->fetchAccessTokenWithAuthCode($code);
+        $token = $this->googleCalendarService
+            ->fetchAccessTokenWithAuthCode($code);
 
         if (isset($token['error']) || empty($token['access_token'])) {
             return redirect()->route('settings.availability.index')
                 ->with('error', 'Google からアクセストークンを取得できませんでした。');
         }
 
-        $client->setAccessToken($token);
+        $googleUserId = $this->googleCalendarService
+            ->getGoogleUserId($token);
 
-        $oauth = new Oauth2($client);
-        $googleUser = $oauth->userinfo->get();
-
-        if (! $googleUser->id) {
+        if (! $googleUserId) {
             return redirect()->route('settings.availability.index')
                 ->with('error', 'Google アカウントを確認できませんでした。');
         }
 
-        $calendar = new Calendar($client);
-
         $request->user()->googleCredential()->updateOrCreate(
             ['user_id' => $request->user()->id],
             [
-                'google_user_id' => $googleUser->id,
+                'google_user_id' => $googleUserId,
                 'calendar_id' => 'primary',
                 'access_token' => json_encode($token, JSON_THROW_ON_ERROR),
                 'refresh_token' => $token['refresh_token'] ?? $request->user()->googleCredential?->refresh_token,

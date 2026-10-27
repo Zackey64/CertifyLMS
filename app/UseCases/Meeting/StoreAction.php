@@ -13,6 +13,7 @@ use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingReservedNotification;
 use App\Services\CoachMeetingLoadService;
+use App\Services\GoogleCalendarService;
 use App\Services\MeetingAvailabilityService;
 use App\Services\MeetingQuotaService;
 use App\UseCases\MeetingQuota\ConsumeQuotaAction;
@@ -21,13 +22,14 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-final class StoreAction
+class StoreAction
 {
     public function __construct(
         private readonly MeetingAvailabilityService $availabilityService,
         private readonly CoachMeetingLoadService $coachLoadService,
         private readonly MeetingQuotaService $quotaService,
         private readonly ConsumeQuotaAction $consumeAction,
+        private readonly GoogleCalendarService $googleCalendarService,
     ) {}
 
     /**
@@ -90,6 +92,20 @@ final class StoreAction
 
             return $meeting->fresh();
         });
+
+        // Google カレンダーに面談予定を登録する。
+        $credential = $meeting->coach->googleCredential;
+
+        if ($credential !== null) {
+            $eventId = $this->googleCalendarService->createMeetingEvent(
+                $credential,
+                $meeting,
+            );
+
+            $meeting->update([
+                'google_calendar_event_id' => $eventId,
+            ]);
+        }
 
         // 予約確定後にコーチへ通知する。
         $meeting->coach->notify(new MeetingReservedNotification);
