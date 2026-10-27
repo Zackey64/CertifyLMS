@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -41,25 +42,54 @@ class GeminiService
             ]);
         }
 
-        $response = Http::acceptJson()
-            ->withHeaders([
-                'x-goog-api-key' => $apiKey,
-            ])
-            ->connectTimeout(10)
-            ->timeout(60)
-            ->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
-                [
-                    'contents' => [
+        $maxAttempts = 3;
+        $response = null;
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                $response = Http::acceptJson()
+                    ->withHeaders([
+                        'x-goog-api-key' => $apiKey,
+                    ])
+                    ->connectTimeout(10)
+                    ->timeout(60)
+                    ->post(
+                        "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
                         [
-                            'role' => 'user',
-                            'parts' => [
-                                ['text' => $prompt],
+                            'contents' => [
+                                [
+                                    'role' => 'user',
+                                    'parts' => [
+                                        ['text' => $prompt],
+                                    ],
+                                ],
                             ],
-                        ],
-                    ],
-                ]
-            );
+                        ]
+                    );
+            } catch (ConnectionException $exception) {
+                if ($attempt === $maxAttempts) {
+                    throw $exception;
+                }
+
+                usleep(100_000 * $attempt);
+
+                continue;
+            }
+
+            if (
+                $response->successful()
+                || ! in_array($response->status(), [429, 500, 502, 503, 504], true)
+                || $attempt === $maxAttempts
+            ) {
+                break;
+            }
+
+            usleep(100_000 * $attempt);
+        }
+
+        if (! $response instanceof Response) {
+            throw new RuntimeException('Gemini APIの呼び出しに失敗しました。');
+        }
 
         if ($response->failed()) {
             throw new RuntimeException(

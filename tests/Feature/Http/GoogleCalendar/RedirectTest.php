@@ -28,7 +28,7 @@ class RedirectTest extends TestCase
 
     /**
      * Google カレンダーへのリダイレクト URL を生成できる。
-     * 
+     *
      * @group external-api
      */
     public function test_can_redirect_to_google_calendar_with_state(): void
