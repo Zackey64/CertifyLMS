@@ -6,14 +6,18 @@ namespace App\Notifications;
 
 use App\Enums\MeetingReminderType;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MeetingReminderNotification extends Notification
+class MeetingReminderNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly MeetingReminderType $type) {}
+    public function __construct(private readonly MeetingReminderType $type)
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {

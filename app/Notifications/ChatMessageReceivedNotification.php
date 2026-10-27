@@ -6,13 +6,17 @@ namespace App\Notifications;
 
 use App\Models\ChatRoom;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ChatMessageReceivedNotification extends Notification
+class ChatMessageReceivedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly ChatRoom $room) {}
+    public function __construct(private readonly ChatRoom $room)
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
