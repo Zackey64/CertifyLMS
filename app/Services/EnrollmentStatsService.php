@@ -27,9 +27,9 @@ class EnrollmentStatsService
     public function adminKpi(): array
     {
         return Cache::remember(
-    config('dashboard.admin_kpi_cache_key'),
-    config('dashboard.admin_cache_ttl'),
-    function (): array {
+            config('dashboard.admin_kpi_cache_key'),
+            config('dashboard.admin_cache_ttl'),
+            function (): array {
 
                 $counts = DB::table('enrollments')
                     ->whereNull('deleted_at')
@@ -87,8 +87,8 @@ class EnrollmentStatsService
     public function completionRateByCertification(): Collection
     {
         return Cache::remember(
-    config('dashboard.admin_completion_rate_cache_key'),
-    config('dashboard.admin_cache_ttl'),
+            config('dashboard.admin_completion_rate_cache_key'),
+            config('dashboard.admin_cache_ttl'),
             fn (): Collection => collect($this->byCertification())
                 ->filter(fn (array $row): bool => $row['total'] > 0)
                 ->map(function (array $row): array {

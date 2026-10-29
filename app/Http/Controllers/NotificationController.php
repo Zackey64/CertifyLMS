@@ -36,7 +36,8 @@ class NotificationController extends Controller
 
     public function markAsRead(Request $request, DatabaseNotification $notification): RedirectResponse
     {
-        $notification = $request->user()->notifications()->findOrFail($notification->id);
+        $user = $request->user();
+        $notification = $user->notifications()->findOrFail($notification->id);
         $notification->markAsRead();
 
         $url = $notification->data['url'] ?? null;
@@ -51,9 +52,8 @@ class NotificationController extends Controller
 
     public function markAllAsRead(Request $request): RedirectResponse
     {
-        $request->user()
-            ->unreadNotifications
-            ->markAsRead();
+        $user = $request->user();
+        $user->unreadNotifications->markAsRead();
 
         return back()->with('success', 'すべて既読にしました。');
     }
