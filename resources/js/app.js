@@ -4,7 +4,7 @@
  */
 
 import './bootstrap';
-
+import './notification/popover';
 import { initModals } from './components/modal';
 import { initDropdowns } from './components/dropdown';
 import { initFlash } from './components/flash';

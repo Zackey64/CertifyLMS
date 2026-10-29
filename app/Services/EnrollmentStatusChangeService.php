@@ -9,7 +9,7 @@ use App\Models\Enrollment;
 use App\Models\EnrollmentStatusLog;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Services\AdminDashboardCacheService;
+
 /**
  * Enrollment 状態遷移の監査ログ(`EnrollmentStatusLog`)を INSERT する Service。
  *
@@ -24,6 +24,7 @@ final class EnrollmentStatusChangeService
     public function __construct(
         private readonly AdminDashboardCacheService $dashboardCache,
     ) {}
+
     /**
      * @param Enrollment $enrollment 状態遷移する対象 Enrollment
      * @param ?EnrollmentStatus $fromStatus 遷移前ステータス(初回登録時のみ null、それ以降は必須)

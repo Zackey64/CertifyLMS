@@ -32,4 +32,23 @@ class ShowTest extends TestCase
         // Assert
         $response->assertOk();
     }
+
+    // コーチは通知の詳細を表示できない
+    public function test_coach_cannot_view_show(): void
+    {
+        // Arrange
+        $coach = User::factory()->coach()->create();
+        $announcement = Announcement::factory()->create();
+        $notification = new AnnouncementNotification($announcement);
+        $databaseNotification = $coach->notifications()->create([
+            'id' => $notification->id,
+            'type' => $notification::class,
+            'data' => $notification->toDatabase($coach),
+            'read_at' => null,
+        ]);
+        // Act
+        $response = $this->actingAs($coach)->get(route('notifications.show', $databaseNotification));
+        // Assert
+        $response->assertForbidden();
+    }
 }
