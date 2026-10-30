@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\MeetingReminderStatus;
 use App\Enums\MeetingReminderType;
 use App\Enums\MeetingStatus;
 use App\Models\Meeting;
@@ -35,28 +36,31 @@ class SendMeetingReminders extends Command
 
         // 対象面談を取得
         $meetings = $this->targetMeetings($type);
+
         foreach ($meetings as $meeting) {
-            $alreadySent = MeetingReminder::query()
-                ->where('meeting_id', $meeting->id)
-                ->where('type', $type->value)
-                ->exists();
-            // 重複チェック
-            if ($alreadySent) {
-                continue;
+            foreach ([$meeting->student, $meeting->coach] as $recipient) {
+                $reminder = MeetingReminder::firstOrCreate(
+                    [
+                        'meeting_id' => $meeting->id,
+                        'type' => $type,
+                        'recipient_id' => $recipient->id,
+                    ],
+                    [
+                        'status' => MeetingReminderStatus::Pending,
+                        'sent_at' => null,
+                    ],
+                );
+
+                // 送信済みならスキップ
+                if ($reminder->status === MeetingReminderStatus::Sent) {
+                    continue;
+                }
+
+                // 送信待ち・失敗の場合は通知をキューに登録
+                $recipient->notify(
+                    new MeetingReminderNotification($type, $reminder->id)
+                );
             }
-
-            $notification = new MeetingReminderNotification($type);
-
-            // student / coach に通知
-            $meeting->student->notify($notification);
-            $meeting->coach->notify($notification);
-
-            // 送信履歴を保存
-            MeetingReminder::create([
-                'meeting_id' => $meeting->id,
-                'type' => $type,
-                'sent_at' => now(),
-            ]);
         }
 
         return self::SUCCESS;
@@ -71,9 +75,13 @@ class SendMeetingReminders extends Command
             ->with(['student', 'coach']);
 
         if ($type === MeetingReminderType::Eve) {
+            // 翌日0時から翌々日0時まで
+            $tomorrow = $now->copy()->addDay()->startOfDay();
+            $dayAfterTomorrow = $tomorrow->copy()->addDay();
+
             $query
-                ->where('scheduled_at', '<=', $now->copy()->addDay())
-                ->where('scheduled_at', '>', $now);
+                ->where('scheduled_at', '>=', $tomorrow)
+                ->where('scheduled_at', '<', $dayAfterTomorrow);
         } else {
             $targetTime = $now->copy()->addHour();
 

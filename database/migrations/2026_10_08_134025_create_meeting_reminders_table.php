@@ -16,11 +16,13 @@ return new class extends Migration
         Schema::create('meeting_reminders', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('meeting_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('recipient_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('pending');
             $table->string('type');
-            $table->dateTime('sent_at');
+            $table->dateTime('sent_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['meeting_id', 'type']); // 重複配信防止
+            $table->unique(['meeting_id', 'type', 'recipient_id']); // 重複配信防止
         });
     }
 

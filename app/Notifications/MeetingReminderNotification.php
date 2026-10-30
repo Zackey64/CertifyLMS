@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\MeetingReminderStatus;
 use App\Enums\MeetingReminderType;
+use App\Models\MeetingReminder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Throwable;
 
 class MeetingReminderNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly MeetingReminderType $type)
-    {
+    public function __construct(
+        private readonly MeetingReminderType $type,
+        private readonly string $reminderId,
+    ) {
         $this->afterCommit();
     }
 
@@ -56,5 +61,17 @@ class MeetingReminderNotification extends Notification implements ShouldQueue
             MeetingReminderType::Eve => '明日、ミーティングが予定されています。',
             MeetingReminderType::OneHourBefore => '1時間後にミーティングが予定されています。',
         };
+    }
+
+    /**
+     * 通知ジョブが失敗した場合に呼び出される。
+     */
+    public function failed(Throwable $exception): void
+    {
+        MeetingReminder::query()
+            ->whereKey($this->reminderId)
+            ->update([
+                'status' => MeetingReminderStatus::Failed->value,
+            ]);
     }
 }

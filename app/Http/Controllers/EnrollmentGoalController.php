@@ -19,8 +19,8 @@ class EnrollmentGoalController extends Controller
         $validated = $request->validated();
 
         $enrollment->goals()->create($validated);
-
-        return redirect()->route('enrollments.show', $enrollment);
+        return redirect()->route('enrollments.show', $enrollment)
+            ->with('success', '個人学習目標を作成しました。');
     }
 
     public function edit(EnrollmentGoal $goal): View
@@ -36,7 +36,8 @@ class EnrollmentGoalController extends Controller
         $validated = $request->validated();
         $goal->update($validated);
 
-        return redirect()->route('enrollments.show', $goal->enrollment_id);
+        return redirect()->route('enrollments.show', $goal->enrollment_id)
+            ->with('success', '個人学習目標を更新しました。');
     }
 
     public function destroy(EnrollmentGoal $goal): RedirectResponse
@@ -44,7 +45,8 @@ class EnrollmentGoalController extends Controller
         $this->authorize('delete', $goal);
         $goal->delete();
 
-        return redirect()->route('enrollments.show', $goal->enrollment_id);
+        return redirect()->route('enrollments.show', $goal->enrollment_id)
+            ->with('success', '個人学習目標を削除しました。');
     }
 
     public function markAchieved(EnrollmentGoal $goal): RedirectResponse
@@ -52,7 +54,8 @@ class EnrollmentGoalController extends Controller
         $this->authorize('markAchieved', $goal);
         $goal->update(['achieved_at' => now()]);
 
-        return redirect()->route('enrollments.show', $goal->enrollment_id);
+        return redirect()->route('enrollments.show', $goal->enrollment_id)
+            ->with('success', '個人学習目標を達成済みにしました。');
     }
 
     public function unmarkAchieved(EnrollmentGoal $goal): RedirectResponse
@@ -60,6 +63,7 @@ class EnrollmentGoalController extends Controller
         $this->authorize('unmarkAchieved', $goal);
         $goal->update(['achieved_at' => null]);
 
-        return redirect()->route('enrollments.show', $goal->enrollment_id);
+        return redirect()->route('enrollments.show', $goal->enrollment_id)
+            ->with('success', '個人学習目標の達成を取り消しました。');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\MeetingReminderStatus;
 use App\Enums\MeetingReminderType;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,11 +17,14 @@ class MeetingReminder extends Model
 
     protected $fillable = [
         'meeting_id',
+        'recipient_id',
+        'status',
         'type',
         'sent_at',
     ];
 
     protected $casts = [
+        'status' => MeetingReminderStatus::class,
         'type' => MeetingReminderType::class,
         'sent_at' => 'datetime',
     ];

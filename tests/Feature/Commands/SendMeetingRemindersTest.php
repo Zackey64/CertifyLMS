@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Commands;
 
+use App\Enums\MeetingReminderStatus;
 use App\Enums\MeetingReminderType;
 use App\Models\Meeting;
 use App\Models\MeetingReminder;
@@ -47,11 +48,15 @@ class SendMeetingRemindersTest extends TestCase
         $meeting = Meeting::factory()->reserved()->create([
             'scheduled_at' => now()->addHours(20),
         ]);
-        MeetingReminder::factory()->create([
-            'meeting_id' => $meeting->id,
-            'type' => MeetingReminderType::Eve,
-            'sent_at' => now(),
-        ]);
+        foreach ([$meeting->student, $meeting->coach] as $recipient) {
+            MeetingReminder::factory()->create([
+                'meeting_id' => $meeting->id,
+                'recipient_id' => $recipient->id,
+                'type' => MeetingReminderType::Eve,
+                'status' => MeetingReminderStatus::Sent,
+                'sent_at' => now(),
+            ]);
+        }
         // Act
         $this->artisan('notifications:send-meeting-reminders', ['--window' => 'eve'])->assertSuccessful();
         // Assert
