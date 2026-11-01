@@ -15,6 +15,10 @@ class NotificationController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $request->validate([
+            'tab' => ['sometimes', 'string', 'in:all,unread'],
+        ]);
+
         $user = $request->user();
 
         $this->authorize('viewAny', DatabaseNotification::class);
