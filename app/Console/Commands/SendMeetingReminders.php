@@ -51,12 +51,22 @@ class SendMeetingReminders extends Command
                     ],
                 );
 
-                // 送信済みならスキップ
-                if ($reminder->status === MeetingReminderStatus::Sent) {
+                // Pending または Failed の場合だけキュー登録を試みる
+                $claimed = MeetingReminder::query()
+                    ->whereKey($reminder->id)
+                    ->whereIn('status', [
+                        MeetingReminderStatus::Pending->value,
+                        MeetingReminderStatus::Failed->value,
+                    ])
+                    ->update([
+                        'status' => MeetingReminderStatus::Queued->value,
+                    ]);
+
+                // すでにキュー登録済み・送信済みならスキップ
+                if ($claimed === 0) {
                     continue;
                 }
 
-                // 送信待ち・失敗の場合は通知をキューに登録
                 $recipient->notify(
                     new MeetingReminderNotification($type, $reminder->id)
                 );
@@ -75,7 +85,12 @@ class SendMeetingReminders extends Command
             ->with(['student', 'coach']);
 
         if ($type === MeetingReminderType::Eve) {
-            // 翌日0時から翌々日0時まで
+            // 前日18時より前なら対象外
+            if ($now->hour < 18) {
+                return collect();
+            }
+
+            // 翌日の面談を取得
             $tomorrow = $now->copy()->addDay()->startOfDay();
             $dayAfterTomorrow = $tomorrow->copy()->addDay();
 
@@ -83,6 +98,7 @@ class SendMeetingReminders extends Command
                 ->where('scheduled_at', '>=', $tomorrow)
                 ->where('scheduled_at', '<', $dayAfterTomorrow);
         } else {
+            // 1時間後に開始する面談を取得
             $targetTime = $now->copy()->addHour();
 
             $query

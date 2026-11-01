@@ -6,12 +6,14 @@ namespace App\Providers;
 
 use App\Events\CertificationCoachAttached;
 use App\Events\CertificationCoachDetached;
+use App\Listeners\MarkMeetingReminderAsSent;
 use App\Listeners\SyncChatMembersOnCoachAssignmentChanged;
 use App\Listeners\UpdateLastLoginAt;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
@@ -33,6 +35,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         CertificationCoachDetached::class => [
             SyncChatMembersOnCoachAssignmentChanged::class,
+        ],
+        NotificationSent::class => [
+            MarkMeetingReminderAsSent::class,
         ],
     ];
 

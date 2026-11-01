@@ -74,4 +74,14 @@ class MeetingReminderNotification extends Notification implements ShouldQueue
                 'status' => MeetingReminderStatus::Failed->value,
             ]);
     }
+
+    public function markAsSent(): void
+    {
+        MeetingReminder::query()
+            ->whereKey($this->reminderId)
+            ->update([
+                'status' => MeetingReminderStatus::Sent->value,
+                'sent_at' => now(),
+            ]);
+    }
 }

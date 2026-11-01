@@ -19,6 +19,7 @@ class EnrollmentGoalController extends Controller
         $validated = $request->validated();
 
         $enrollment->goals()->create($validated);
+
         return redirect()->route('enrollments.show', $enrollment)
             ->with('success', '個人学習目標を作成しました。');
     }
